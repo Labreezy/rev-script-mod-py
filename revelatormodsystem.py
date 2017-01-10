@@ -27,7 +27,7 @@ def on_message(message, data):
 		scriptfile.close()
 		script.post({'payload': messagepayload})
 	else:
-		print currscriptpath + " not found.  Either you don't have a mod for that character or you misspelled a file name."
+		print currscriptpath + " not found.  Either you don't have a mod for that character, the ETC file wasn't required, or you misspelled a file name."
 		script.post({'type':str(2), 'payload': ""})
 if __name__ == '__main__':
 	if(not os.path.isdir("ggmods")):
@@ -45,10 +45,13 @@ if __name__ == '__main__':
 		var script = [];
 		var scriptfound = false;
 		var charabbrs = [ 'AXL', 'BED', 'CHP', 'DZY', 'ELP', 'FAU', 'INO', 'JAM', 'JHN', 'JKO', 'KUM', 'KYK', 'LEO', 'MAY', 'MLL', 'POT', 'RAM', 'RVN', 'SIN', 'SLY', 'SOL', 'VEN', 'ZAT'];
+		var etcconst = '_ETC';
 		var scriptpointer;
 		var currscriptsize;
 		var p1extramem = NULL;
+		var p1etcmem = NULL;
 		var p2extramem = NULL;
+		var p2etcmem = NULL;
 		var callcount = 0;
 		var name;
 		var attachaddr = xrdbase.add(0x9C8B2A);
@@ -58,16 +61,25 @@ if __name__ == '__main__':
 			})
 		Interceptor.attach(fxnptr, {onEnter: function (args){
 			callcount += 1;
-			if(callcount == 1 && !(p1extramem.isNull() && p2extramem.isNull())){
+			if(callcount == 1 && !(p1extramem.isNull() && p2extramem.isNull() && p1etcmem.isNull() && p2etcmem.isNull())){
 				p1extramem = NULL;
 				p2extramem = NULL;
+				p1etcmem = NULL;
+				p2etcmem = NULL;
 			}
-			if(callcount == 1 || callcount == 3){
+			if(callcount < 5){
 				var intscript = [];
-				var fxncount = Memory.readUInt(args[0]);
+				var fxncount;
+				if (callcount == 1 || callcount == 3){
+				fxncount = Memory.readUInt(args[0]);
 				name = Memory.readCString(args[0].add(0x24 * fxncount + 0x2C)).toUpperCase();
+				}
 				if(charabbrs.indexOf(name) != -1){
-					send(name, Memory.readByteArray(args[0], args[1].toInt32()));
+					if(callcount == 1 || callcount == 3){
+						send(name, Memory.readByteArray(args[0], args[1].toInt32()));
+					} else {
+						send(name + etcconst, Memory.readByteArray(args[0], args[1].toInt32()));
+					}
 					var op = recv(function (value){
 						if(value.payload.length != 0){
 						strarr = value.payload.split(',');
@@ -89,12 +101,18 @@ if __name__ == '__main__':
 								p1extramem = Memory.alloc(intscript.length);
 								Memory.writeByteArray(p1extramem, intscript);
 								args[0] = p1extramem;
-								Memory.writePointer(scriptpointerpointer, p1extramem);
-							} else {
+							} else if (callcount == 3){
 								p2extramem = Memory.alloc(intscript.length);
 								Memory.writeByteArray(p2extramem, intscript);
 								args[0] = p2extramem;
-								Memory.writePointer(scriptpointerpointer, p2extramem);
+							} else if (callcount == 2){
+								p1etcmem = Memory.alloc(intscript.length);
+								Memory.writeByteArray(p1etcmem, intscript);
+								args[0] = p1etcmem;
+							} else {
+								p2etcmem = Memory.alloc(intscript.length);
+								Memory.writeByteArray(p2etcmem, intscript);
+								args[0] = p2etcmem;
 							}
 						} else {
 							Memory.writeByteArray(args[0], intscript);
