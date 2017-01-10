@@ -15,9 +15,9 @@ def on_message(message, data):
 	global scriptextract
 	global basepath
 	print message
-	currscriptpath = basepath + 'ggmods/' + message['payload'] + '.ggscript'
-	if scriptextract and not os.path.isfile('originalscripts/' + message['payload'] + '.ggscript'):
-		origscript = open('originalscripts/' + message['payload'] + '.ggscript', 'wb')
+	currscriptpath = os.path.join(basepath, 'ggmods', message['payload'].ggscript);
+	if scriptextract and not os.path.isfile(os.join(basepath, 'originalscripts', message['payload'] + '.ggscript')):
+		origscript = open(os.join(basepath, 'originalscripts', message['payload'] + '.ggscript'), 'wb')
 		origscript.write(bytearray(data))	
 		origscript.close()
 	elif scriptextract:
@@ -35,12 +35,12 @@ if __name__ == '__main__':
 	global basepath
 	basepath = os.path.dirname(os.path.realpath(sys.argv[0]))
 	print basepath
-	if(not os.path.isdir(basepath + "/ggmods")):
-		os.mkdir(basepath + "/ggmods")
+	if(not os.path.isdir(os.path.join(basepath,'ggmods'))):
+		os.mkdir(os.path.join(basepath, 'ggmods'))
 		print 'ggmods folder created in the same folder you ran this from.  Put all your named mods there.'
 	if(len(sys.argv) > 1 and sys.argv[1] == '--scriptextract'):
-		if(not os.path.isdir("originalscripts")):
-			os.mkdir("originalscripts")
+		if(not os.path.isdir(os.path.join(basepath, "originalscripts"))):
+			os.mkdir(os.path.join(basepath , "originalscripts"))
 			print 'originalscripts folder created.  Happy modding!'
 		scriptextract = True
 	session = frida.attach("GuiltyGearXrd.exe");
