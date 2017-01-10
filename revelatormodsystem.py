@@ -15,7 +15,7 @@ def on_message(message, data):
 	global scriptextract
 	global basepath
 	print message
-	currscriptpath = os.path.join(basepath, 'ggmods', message['payload'].ggscript);
+	currscriptpath = os.path.join(basepath, 'ggmods', message['payload'] + .ggscript);
 	if scriptextract and not os.path.isfile(os.join(basepath, 'originalscripts', message['payload'] + '.ggscript')):
 		origscript = open(os.join(basepath, 'originalscripts', message['payload'] + '.ggscript'), 'wb')
 		origscript.write(bytearray(data))	
