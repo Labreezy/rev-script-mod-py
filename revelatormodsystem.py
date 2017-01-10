@@ -2,7 +2,8 @@ import frida
 import sys
 import os
 
-scriptextract = False;
+scriptextract = False
+basepath = ''
 def bytearrtomessage(barr):
 	result = ""	
 	for b in barr:
@@ -12,8 +13,9 @@ def bytearrtomessage(barr):
 def on_message(message, data):
 	global script
 	global scriptextract
+	global basepath
 	print message
-	currscriptpath = 'ggmods/' + message['payload'] + '.ggscript'
+	currscriptpath = basepath + 'ggmods/' + message['payload'] + '.ggscript'
 	if scriptextract and not os.path.isfile('originalscripts/' + message['payload'] + '.ggscript'):
 		origscript = open('originalscripts/' + message['payload'] + '.ggscript', 'wb')
 		origscript.write(bytearray(data))	
@@ -30,8 +32,11 @@ def on_message(message, data):
 		print currscriptpath + " not found.  Either you don't have a mod for that character, the ETC file wasn't required, or you misspelled a file name."
 		script.post({'type':str(2), 'payload': ""})
 if __name__ == '__main__':
-	if(not os.path.isdir("ggmods")):
-		os.mkdir("ggmods")
+	global basepath
+	basepath = os.path.dirname(os.path.realpath(sys.argv[0]))
+	print basepath
+	if(not os.path.isdir(basepath + "/ggmods")):
+		os.mkdir(basepath + "/ggmods")
 		print 'ggmods folder created in the same folder you ran this from.  Put all your named mods there.'
 	if(len(sys.argv) > 1 and sys.argv[1] == '--scriptextract'):
 		if(not os.path.isdir("originalscripts")):
