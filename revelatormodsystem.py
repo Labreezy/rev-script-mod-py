@@ -2,28 +2,37 @@ import frida
 import sys
 import os
 
-scriptextract = False
+script_extract_folder = ''
 basepath = ''
+mod_folder = ''
+
+
 def bytearrtomessage(barr):
-	result = ""	
+	result = ""
 	for b in barr:
 		result += hex(b) + ','
 	print result[:4]
 	return result[:-1]
+
+
 def on_message(message, data):
-	global script
-	global scriptextract
-	global basepath
 	print message
-	currscriptpath = os.path.join(basepath, 'ggmods', message['payload'] + '.ggscript');
-	if scriptextract and not os.path.isfile(os.path.join(basepath, 'originalscripts', message['payload'] + '.ggscript')):
-		origscript = open(os.path.join(basepath, 'originalscripts', message['payload'] + '.ggscript'), 'wb')
-		origscript.write(bytearray(data))	
-		origscript.close()
-	elif scriptextract:
-		print 'originalscripts/' + message['payload'] + '.ggscript already exists.  Not overwriting.'
+	script_name = message['payload'] + '.ggscript'
+
+	# Copy the script into the extract folder if needed
+	if script_extract_folder:
+		original_script_path = os.path.join(script_extract_folder, script_name)
+		if not os.path.isfile(original_script_path):
+			origscript = open(original_script_path, 'wb')
+			origscript.write(bytearray(data))
+			origscript.close()
+		else:
+			print original_script_path + ' already exists.  Not overwriting.'
+
+	# post the received data
+	currscriptpath = os.path.join(mod_folder, script_name)
 	if(os.path.isfile(currscriptpath)):
-		print 'Loading ' + message['payload'] + '.ggscript'
+		print 'Loading ' + script_name
 		scriptfile = open(currscriptpath, 'rb')
 		messagepayload = bytearrtomessage(bytearray(scriptfile.read()))
 		scriptfile.close()
@@ -31,20 +40,29 @@ def on_message(message, data):
 	else:
 		print currscriptpath + " not found.  Either you don't have a mod for that character, the ETC file wasn't required, or you misspelled a file name."
 		script.post({'type':str(2), 'payload': ""})
+
+
 if __name__ == '__main__':
-	global basepath
-	basepath = os.path.dirname(os.path.realpath(sys.argv[0]))
-	print basepath
-	if(not os.path.isdir(os.path.join(basepath,'ggmods'))):
-		os.mkdir(os.path.join(basepath, 'ggmods'))
-		print 'ggmods folder created in the same folder you ran this from.  Put all your named mods there.'
+	# create the various folders directly at the drive path
+	(drive, tail) = os.path.splitdrive(os.path.realpath(sys.argv[0]))
+	basepath = os.path.join(drive, os.sep)
+
+	# create the mod folder if not present
+	mod_folder = os.path.join(basepath, 'ggmods')
+	if(not os.path.isdir(mod_folder)):
+		os.mkdir(mod_folder)
+		print 'ggmods folder created at ' + mod_folder + '.  Put all your named mods there.'
+
+	# create the script extract folder if the argument was provided
 	if(len(sys.argv) > 1 and sys.argv[1] == '--scriptextract'):
-		if(not os.path.isdir(os.path.join(basepath, "originalscripts"))):
-			os.mkdir(os.path.join(basepath , "originalscripts"))
-			print 'originalscripts folder created.  Happy modding!'
-		scriptextract = True
-	session = frida.attach("GuiltyGearXrd.exe");
-	print 'Attached successfully!';
+		script_extract_folder = os.path.join(basepath, "originalscripts")
+		if(not os.path.isdir(script_extract_folder)):
+			os.mkdir(script_extract_folder)
+			print 'originalscripts folder created at ' + script_extract_folder + '.  Happy modding!'
+
+	# find the GG process and attach the mod script
+	session = frida.attach("GuiltyGearXrd.exe")
+	print 'Attached successfully!'
 	script = session.create_script("""var xrdbase = Module.findBaseAddress('GuiltyGearXrd.exe');
 		var fxnptr = xrdbase.add(0xB8BAC0);
 		var script = [];
@@ -134,4 +152,4 @@ if __name__ == '__main__':
 		});""")
 	script.on('message', on_message)
 	script.load()
-	sys.stdin.read()	
+	sys.stdin.read()
