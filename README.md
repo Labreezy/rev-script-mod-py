@@ -1,5 +1,5 @@
 # RevelatorModKit
-This is a script mod system for Guilty Gear Xrd -REVELATOR-.  Supports normal but not etc files so far.
+This is a script mod system for Guilty Gear Xrd -REVELATOR-.  Supports both normal and ETC files.
 
 ## Mod Manager Installation Instructions
 1. Download the latest python 2.7 [here](https://www.python.org/downloads/release/python-2713/).  Make sure you add python to your PATH.
