@@ -64,7 +64,7 @@ if __name__ == '__main__':
 	session = frida.attach("GuiltyGearXrd.exe")
 	print 'Attached successfully!'
 	script = session.create_script("""var xrdbase = Module.findBaseAddress('GuiltyGearXrd.exe');
-		var fxnptr = xrdbase.add(0xB8BAC0);
+		var fxnptr = xrdbase.add(0xB8BD60);
 		var script = [];
 		var scriptfound = false;
 		var charabbrs = [ 'AXL', 'BED', 'CHP', 'DZY', 'ELP', 'FAU', 'INO', 'JAM', 'JHN', 'JKO', 'KUM', 'KYK', 'LEO', 'MAY', 'MLL', 'POT', 'RAM', 'RVN', 'SIN', 'SLY', 'SOL', 'VEN', 'ZAT'];
