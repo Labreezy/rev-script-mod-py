@@ -79,7 +79,7 @@ if __name__ == '__main__':
 		var name;
 		var attachaddr = xrdbase.add(0x9C8B2A);
 		var scriptpointerpointer = NULL;
-		Interceptor.attach(attachaddr, function (args){
+		Interceptor.attach(fxnptr, function (args){
 				scriptpointerpointer = this.context.ecx.add(0x3C);
 			})
 		Interceptor.attach(fxnptr, {onEnter: function (args){
