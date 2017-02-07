@@ -44,8 +44,7 @@ def on_message(message, data):
 
 if __name__ == '__main__':
 	# create the various folders directly at the drive path
-	(drive, tail) = os.path.splitdrive(os.path.realpath(sys.argv[0]))
-	basepath = os.path.join(drive, os.sep)
+	basepath = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 	# create the mod folder if not present
 	mod_folder = os.path.join(basepath, 'ggmods')
